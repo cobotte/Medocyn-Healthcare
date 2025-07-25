@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Patient {
+  id                    String         @id @default(uuid())
+  name                  String
+  email                 String         @unique
+  passwordHash          String
+  age                   Int?
+  bloodGroup            String?
+  patientId             String         @unique
+  membershipStatus      String         @default("Standard Member")
+  phone                 String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  language              String         @default("English")
+  emailNotifications    Boolean        @default(true)
+  smsNotifications      Boolean        @default(true)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  appointments          Appointment[]
+  notifications         Notification[]
+}
+
+model Doctor {
+  id              String        @id @default(uuid())
+  name            String
+  photo           String
+  qualification   String
+  experience      String
+  languages       String // Stored as comma-separated values, e.g. "English, Spanish"
+  availability    String // Stored as JSON or text schedule details
+  biography       String
+  status          String        @default("Active")
+  consultationFee Float         @default(0.0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  departmentId    String
+  department      Department    @relation(fields: [departmentId], references: [id])
+  appointments    Appointment[]
+}
+
+model Department {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  slug         String        @unique
+  description  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  doctors      Doctor[]
+  appointments Appointment[]
+}
+
+model Appointment {
+  id               String     @id @default(uuid())
+  appointmentId    String     @unique
+  patientName      String
+  email            String
+  phone            String
+  dob              String
+  gender           String
+  consultationType String     @default("In-Person Consultation")
+  date             String
+  timeSlot         String
+  concern          String?
+  symptoms         String?
+  status           String     @default("Upcoming") // Upcoming, Completed, Cancelled
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  patientId        String?
+  patient          Patient?   @relation(fields: [patientId], references: [id])
+  doctorId         String
+  doctor           Doctor     @relation(fields: [doctorId], references: [id])
+  departmentId     String
+  department       Department @relation(fields: [departmentId], references: [id])
+}
+
+model HealthPackage {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  price       Float
+  description String
+  features    String // Newline or JSON separated
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactMessage {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  phone         String?
+  subject       String
+  department    String?
+  message       String
+  contactMethod String?
+  contactTime   String?
+  createdAt     DateTime @default(now())
+}
+
+model Blog {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  summary   String
+  content   String
+  category  String
+  readTime  String
+  image     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  desc      String
+  type      String   @default("reminder") // reminder, update, security, prescription, report
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}

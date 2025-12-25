@@ -1,9 +1,11 @@
-name: Deploy to GitHub Pages
+name: Deploy Medocyn Healthcare to GitHub Pages
+# Trigger rebuild with correct system timestamp
 
 on:
   push:
     branches:
-      - main # Triggers on push to main branch
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,16 +23,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Build with Next.js
+      - name: Create SQLite Database Directory & File
+        run: |
+          mkdir -p prisma
+          touch prisma/dev.db
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build with Next.js (Static Export)
         run: npm run build
         env:
           GITHUB_ACTIONS: true
@@ -50,3 +59,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+ 

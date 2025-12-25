@@ -1,14 +1,23 @@
 import type { NextConfig } from 'next';
 
+const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
+const repositoryBasePath = '/Medocyn-Healthcare';
+const siteUrl = isGitHubPages
+  ? `https://cobotte.github.io${repositoryBasePath}`
+  : 'https://medocynhealthcare.com';
+
 const nextConfig: NextConfig = {
   output: 'export',
-  distDir: 'out',
   images: {
-    unoptimized: true
+    unoptimized: true,
   },
-  // Ensure the basePath matches the repository name on GitHub Pages
-  basePath: process.env.NODE_ENV === 'production' ? '/Medocyn-Healthcare' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/Medocyn-Healthcare/' : ''
+  basePath: isGitHubPages ? repositoryBasePath : '',
+  assetPrefix: isGitHubPages ? repositoryBasePath : '',
+  trailingSlash: true,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: isGitHubPages ? repositoryBasePath : '',
+    NEXT_PUBLIC_SITE_URL: siteUrl,
+  },
 };
 
 export default nextConfig;
